@@ -1,38 +1,90 @@
-document.querySelector("#search").addEventListener("click", getPokemon);
+let pokemons = [];
+const poke_container = document.getElementById("poke_container");
+const url = "https://pokeapi.co/api/v2/pokemon";
+const pokemons_number = 151;
+const searchTerm = document.getElementById("form");
 
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+const fetchPokemons = async () => {
+  for (let i = 1; i <= pokemons_number; i++) {
+    await getAllpokemon(i);
+  }
+  pokemons.forEach((pokemon) => createPokemonCard(pokemon))
+};
+
+const removePokemon = () => {
+  const pokemonEls = document.getElementsByClassName("pokemon");
+  let removable = [];
+  for (let i = 0; i < pokemonEls.length; i++) {
+    const pokemonEL = pokemonls[i];
+    removablePokemons = [...removablePokemons, pokemonEL];
+  }
+  removablePokemons.forEach((remPoke) => remPoke.remove());
+};
+
+const getpokemon = async (id) => {
+  const searchPokemons = pokemons.filter((poke) => poke.name === id);
+  removePokemon();
+  searchPokemons.forEach((pokemon) => createPokemonCard(pokemon));
+};
+
+const getAllpokemon = async (id) => {
+  const res = await fetch(`${url}/${id}`);
+  const  pokemon = await res.json();
+  pokemons = [...pokemons,pokemon];
 }
+fetchPokemons();
 
-function lowerCaseName(string) {
-  return string.toLowerCase();
-}
+function createPokemonCard(pokemon) {
+  const pokemonEL = document.createElement("div");
+  pokemonEL.classList.add("pokemon");
+  const poke_types = pokemon.types.map((el) => el.type.name).slice(0,1);
+  const name = pokemon.name[0].toUpperCase() + pokemon.name.slice(1);
+  const poke_stats = pokemon.stats.map((el) => el.stat.name);
+  const stats = poke_stats.slice(0, 3);
+  const base_value = pokemon.stats.map((el) => el.base_stat);
+  const base_stat = base_value.slice(0, 3);
+  const stat = stats.map((stat) => {
+    return `<li class="names>${stat}</li>`;
+  }).join("");
+  
+  const base = base_stat.map((base) => {
+    return `<li class ="base">${base}</li>`
+  }).join("");
 
-function getPokemon(e) {
-  const name = document.querySelector("#pokemonName").value;
-  const pokemonName = lowerCaseName(name);
+  const pokeInnerHTML = `<div class="img-container">
+  <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png
+  " alt="${name}"/>
+  <div class="info'>
+  <span class="number">#${pokemon.id.toString().padStart(3, "0")}</span>
+  <h3 class="name"${name}</h3>
+  <small class="type"><span>${poke_types}</span></small>
+  </div>
+  <div class="stats">
+  <h2>Stats</h2>
+  <di class="flex">
+  <ul>${stat}</ul>
+  <ul>${base}</ul>
+  </div>
+  </div>`;
+  pokemonEL.innerHTML = pokeInnerHTML;
+  poke_container.appendChild(pokemonEL);
 
-  fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
-    .then((response) => response.json())
-    .then((data) => {
-      document.querySelector(".pokemonBox").innerHTML = `
-      <div>
-        <img
-          src="${data.sprites.other["official-artwork"].front_default}"
-          alt="Pokemon name"
-        />
-      </div>
-      <div class="pokemonInfos">
-        <h1>${capitalizeFirstLetter(data.name)}</h3>
-        <p>Weight: ${data.weight}</p>
-      </div>`;
-    })
-    .catch((err) => {
-      document.querySelector(".pokemonBox").innerHTML = `
-      <h4>Pokemon not found 😞</h4>
-      `;
-      console.log("Pokemon not found", err);
-    });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const searchTerm = search.value;
+    if (searchTerm){
+      getpokemon(searchterm);
+      search.value = "";
+    }
+    else if (searchterm === ""){
+      pokemons = [];
+      removePokemon();
+      fetchPokemons();
+    }
 
-  e.preventDefault();
+  });
+
+
+
+
 }
